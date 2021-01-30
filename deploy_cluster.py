@@ -3,12 +3,12 @@ from google.cloud import dataproc_v1 as dataproc
 
 def create_cluster():
 
-    # Create a client with the endpoint set to the desired cluster region.
+    # Crear cliente
     cluster_client = dataproc.ClusterControllerClient(client_options={
         'api_endpoint': '{}-dataproc.googleapis.com:443'.format('europe-west1')
     })
 
-    # Create the cluster config.
+    # Crear el cluster config.
     cluster = {
         'project_id': 'erudite-stratum-301721',
         'cluster_name': 'dataproc-bda',
@@ -22,24 +22,24 @@ def create_cluster():
                 'machine_type_uri': 'n1-standard-1'
             },
             'config_bucket': 'bucket-cluster-ricardo',
-            'initialization_actions': [
+            'initialization_actions': [ # !!!importante!
                 {
-                    'executable_file': 'gs://bucket-cluster-ricardo/scripts/cp_watches.sh'
+                    'executable_file': 'gs://bucket-cluster-ricardo/scripts/copy_amazon_source.sh' # copy source 1 para evitar borrado desde HIVE
                 },
                 {
-                    'executable_file': 'gs://bda5-keepcoding-ricardo1/scripts/cp_amazon.sh'
+                    'executable_file': 'gs://bucket-cluster-ricardo/scripts/copy_crawl_source.sh' # copy source 2 para evitar borrado desde HIVE
                 },
                 {
-                    'executable_file': 'gs://bda5-keepcoding-ricardo1/scripts/cp_init.sh'
+                    'executable_file': 'gs://bda5-keepcoding-ricardo1/scripts/copy_hive_init_script.sh' # beeline no puede leer desde gs, se copia a local la query
                 },
                 {
-                    'executable_file': 'gs://bda5-keepcoding-ricardo1/scripts/init_hive.sh'
+                    'executable_file': 'gs://bda5-keepcoding-ricardo1/scripts/execute_hive_script_from_file.sh' # se ejecuta el script en HIVE
                 }
             ]
         }
     }
 
-    # Create the cluster.
+    # Crear el cluster.
     operation = cluster_client.create_cluster('big-data-architecture-ricardo', 'europe-north1', cluster)
     result = operation.result()
 
